@@ -1,5 +1,5 @@
 
-import 'package:structural_health_predictor/Features/SignUp/Domain/Entities/signup_entities.dart';
+import 'package:structural_health_predictor/Features/signup/Domain/Entities/signup_entities.dart';
 
 class SignupModel extends SignupEntities {
   SignupModel({
@@ -13,8 +13,8 @@ class SignupModel extends SignupEntities {
     return SignupModel(
       username: json['username'],
       email: json['email'],
-      password: json['password'],
-      confirmPassword: json['confirm_password'],
+      password: '',
+      confirmPassword: '',
     );
   }
 }

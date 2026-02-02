@@ -1,5 +1,5 @@
-import 'package:structural_health_predictor/Features/SignUp/Domain/Entities/signup_entities.dart';
-import 'package:structural_health_predictor/Features/SignUp/Domain/Repositories_abstract/signup_repository_abstract.dart';
+import 'package:structural_health_predictor/Features/signup/Domain/Entities/signup_entities.dart';
+import 'package:structural_health_predictor/Features/signup/Domain/Repositories_abstract/signup_repository_abstract.dart';
 
 class SignupUsecase {
   final SignupRepositoryAbstract repository;

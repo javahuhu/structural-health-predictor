@@ -1,4 +1,4 @@
-import 'package:structural_health_predictor/Features/SignUp/Domain/Entities/signup_entities.dart';
+import 'package:structural_health_predictor/Features/signup/Domain/Entities/signup_entities.dart';
 
 abstract class SignupRepositoryAbstract {
   Future<SignupEntities> signup({

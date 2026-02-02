@@ -1,22 +1,38 @@
-import 'package:structural_health_predictor/Features/LogIn/Data/Log_in_remote_data_source/log_in_remote_data_source.dart';
 import 'package:structural_health_predictor/Features/LogIn/Domain/Entities/log_in_entities.dart';
 import 'package:structural_health_predictor/Features/LogIn/Domain/Repositories_abstract/log_in_repository_abstract.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class LogInRepositoryImplementation implements LogInRepositoryAbstract {
-  final LogInRemoteDataSource remoteDataSource;
+class LoginRepositoryImpl implements LogInRepositoryAbstract {
+  final SupabaseClient supabaseClient;
 
-  LogInRepositoryImplementation({required this.remoteDataSource});
+LoginRepositoryImpl({required this.supabaseClient});
 
   @override
   Future<LogInEntities> login({
     required String username,
-    required String email,
     required String password,
   }) async {
-    return await remoteDataSource.login(
-      username: username,
+    String email = username;
+
+    if (!username.contains('@')) {
+      final res = await supabaseClient
+          .from('profiles')
+          .select('email')
+          .eq('username', username)
+          .single();
+
+      email = res['email'];
+    }
+
+    final response = await supabaseClient.auth.signInWithPassword(
       email: email,
       password: password,
     );
+
+    if (response.user == null) {
+      throw Exception('Invalid credentials');
+    }
+
+    return LogInEntities(username: username, email: email, password: '');
   }
 }
