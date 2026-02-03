@@ -95,7 +95,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                 child: Padding(
                   padding: EdgeInsets.only(left: 20.w),
                   child: ElevatedButton(
-                    onPressed: () => context.go('/signup'),
+                    onPressed: () => context.replace('/signup'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromARGB(255, 65, 75, 161),
                       padding: EdgeInsets.symmetric(

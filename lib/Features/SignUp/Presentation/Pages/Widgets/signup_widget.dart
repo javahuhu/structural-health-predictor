@@ -89,141 +89,142 @@ class _SignupPageWidgetState extends State<SignupPageWidget>
 
   @override
   Widget build(BuildContext context) {
-    
     final bottomInsets = MediaQuery.of(context).viewInsets.bottom;
-    final isKeyboardVisible = bottomInsets > 100.0; 
+    final isKeyboardVisible = bottomInsets > 100.0;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: GestureDetector(
-        onTap: () {
-         
-          FocusScope.of(context).unfocus();
-        },
-        child: SizedBox(
-          width: 1.sw,
-          height: 1.sh,
-          child: Stack(
-            children: [
-            
-              ...List.generate(_bubbles.length, (index) {
-                return AnimatedBuilder(
-                  animation: _bubbleAnimations[index],
-                  builder: (context, child) {
-                    final bubble = _bubbles[index];
-                    final progress = _bubbleAnimations[index].value;
+      body: PopScope(
+        canPop: true,
+        child: GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+          },
+          child: SizedBox(
+            width: 1.sw,
+            height: 1.sh,
+            child: Stack(
+              children: [
+                ...List.generate(_bubbles.length, (index) {
+                  return AnimatedBuilder(
+                    animation: _bubbleAnimations[index],
+                    builder: (context, child) {
+                      final bubble = _bubbles[index];
+                      final progress = _bubbleAnimations[index].value;
 
-                    final xPos =
-                        bubble.startX + (bubble.endX - bubble.startX) * progress;
-                    final yPos = bubble.startY - progress * 1.2;
+                      final xPos =
+                          bubble.startX +
+                          (bubble.endX - bubble.startX) * progress;
+                      final yPos = bubble.startY - progress * 1.2;
 
-                    return Positioned(
-                      left: xPos * 1.sw - bubble.size / 2,
-                      top: yPos * 1.sh,
-                      child: Container(
-                        width: bubble.size,
-                        height: bubble.size,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: bubble.color.withValues(alpha: 0.05),
-                          border: Border.all(
-                            color: bubble.color.withValues(alpha: 0.1),
-                            width: 1,
+                      return Positioned(
+                        left: xPos * 1.sw - bubble.size / 2,
+                        top: yPos * 1.sh,
+                        child: Container(
+                          width: bubble.size,
+                          height: bubble.size,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: bubble.color.withValues(alpha: 0.05),
+                            border: Border.all(
+                              color: bubble.color.withValues(alpha: 0.1),
+                              width: 1,
+                            ),
                           ),
                         ),
+                      );
+                    },
+                  );
+                }),
+
+                SafeArea(
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20.w,
+                        vertical: 15.h,
                       ),
-                    );
-                  },
-                );
-              }),
-
-              SafeArea(
-                child: Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 20.w,
-                      vertical: 15.h,
-                    ),
-                    child: BlocConsumer<SignupBloc, SignupState>(
-                      listener: (context, state) {
-                        if (state is SignupSuccess) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text(
-                                'Signup successful! Please check your email to verify your account.',
-                              ),
-                              backgroundColor: const Color(0xFF0F3460),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                            ),
-                          );
-
-                          _usernameController.clear();
-                          _emailController.clear();
-                          _passwordController.clear();
-                          _confirmPasswordController.clear();
-                        } else if (state is SignupFailure) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(state.error),
-                              backgroundColor: Colors.red.shade700,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      builder: (context, state) {
-                        return Container(
-                          width: 450.w,
-                          constraints: BoxConstraints(
-                            maxHeight: isKeyboardVisible ? 0.8.sh : 0.9.sh,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24.r),
-                            color: const Color.fromARGB(171, 255, 255, 255),
-                            border: Border.all(
-                              color: const Color.fromARGB(43, 0, 0, 0),
-                              width: 0.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                blurRadius: 30.r,
-                                offset: Offset(0, 10.h),
-                                spreadRadius: 0,
-                              ),
-                            ],
-                          ),
-                          // Wrap with SingleChildScrollView only when keyboard is visible
-                          child: isKeyboardVisible
-                              ? SingleChildScrollView(
-                                  controller: _scrollController,
-                                  physics: const ClampingScrollPhysics(),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 30.w,
-                                    vertical: 20.h,
-                                  ),
-                                  child: _buildFormContent(state),
-                                )
-                              : Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 30.w,
-                                    vertical: 20.h,
-                                  ),
-                                  child: _buildFormContent(state),
+                      child: BlocConsumer<SignupBloc, SignupState>(
+                        listener: (context, state) {
+                          if (state is SignupSuccess) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text(
+                                  'Signup successful! Please check your email to verify your account.',
                                 ),
-                        );
-                      },
+                                backgroundColor: const Color(0xFF0F3460),
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                              ),
+                            );
+
+                            _usernameController.clear();
+                            _emailController.clear();
+                            _passwordController.clear();
+                            _confirmPasswordController.clear();
+                          } else if (state is SignupFailure) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(state.error),
+                                backgroundColor: Colors.red.shade700,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                        builder: (context, state) {
+                          return Container(
+                            width: 450.w,
+                            constraints: BoxConstraints(
+                              maxHeight: isKeyboardVisible ? 0.8.sh : 0.9.sh,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24.r),
+                              color: const Color.fromARGB(171, 255, 255, 255),
+                              border: Border.all(
+                                color: const Color.fromARGB(43, 0, 0, 0),
+                                width: 0.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 30.r,
+                                  offset: Offset(0, 10.h),
+                                  spreadRadius: 0,
+                                ),
+                              ],
+                            ),
+                            // Wrap with SingleChildScrollView only when keyboard is visible
+                            child: isKeyboardVisible
+                                ? SingleChildScrollView(
+                                    controller: _scrollController,
+                                    physics: const ClampingScrollPhysics(),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 30.w,
+                                      vertical: 20.h,
+                                    ),
+                                    child: _buildFormContent(state),
+                                  )
+                                : Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 30.w,
+                                      vertical: 20.h,
+                                    ),
+                                    child: _buildFormContent(state),
+                                  ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -246,10 +247,7 @@ class _SignupPageWidgetState extends State<SignupPageWidget>
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF1A1A2E),
-                  Color(0xFF0F3460),
-                ],
+                colors: [Color(0xFF1A1A2E), Color(0xFF0F3460)],
               ),
             ),
             child: Icon(
@@ -535,13 +533,13 @@ class _SignupPageWidgetState extends State<SignupPageWidget>
   void _handleSignup() {
     if (_formKey.currentState!.validate()) {
       context.read<SignupBloc>().add(
-            SignupSubmitted(
-              username: _usernameController.text.trim(),
-              email: _emailController.text.trim(),
-              password: _passwordController.text,
-              confirmPassword: _confirmPasswordController.text,
-            ),
-          );
+        SignupSubmitted(
+          username: _usernameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          confirmPassword: _confirmPasswordController.text,
+        ),
+      );
     }
   }
 }

@@ -88,135 +88,137 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: GestureDetector(
-        onTap: () {
-          // Dismiss keyboard when tapping outside text fields
-          FocusScope.of(context).unfocus();
-        },
-        child: SizedBox(
-          width: 1.sw,
-          height: 1.sh,
-          child: Stack(
-            children: [
-              // Animated Bubbles Background
-              ...List.generate(_bubbles.length, (index) {
-                return AnimatedBuilder(
-                  animation: _bubbleAnimations[index],
-                  builder: (context, child) {
-                    final bubble = _bubbles[index];
-                    final progress = _bubbleAnimations[index].value;
+      body: PopScope(
+        canPop: true,
+        child: GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+          },
+          child: SizedBox(
+            width: 1.sw,
+            height: 1.sh,
+            child: Stack(
+              children: [
+                // Animated Bubbles Background
+                ...List.generate(_bubbles.length, (index) {
+                  return AnimatedBuilder(
+                    animation: _bubbleAnimations[index],
+                    builder: (context, child) {
+                      final bubble = _bubbles[index];
+                      final progress = _bubbleAnimations[index].value;
 
-                    // Calculate position
-                    final xPos =
-                        bubble.startX + (bubble.endX - bubble.startX) * progress;
-                    final yPos = bubble.startY - progress * 1.2;
+                      // Calculate position
+                      final xPos =
+                          bubble.startX +
+                          (bubble.endX - bubble.startX) * progress;
+                      final yPos = bubble.startY - progress * 1.2;
 
-                    return Positioned(
-                      left: xPos * 1.sw - bubble.size / 2,
-                      top: yPos * 1.sh,
-                      child: Container(
-                        width: bubble.size,
-                        height: bubble.size,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: bubble.color.withOpacity(0.05),
-                          border: Border.all(
-                            color: bubble.color.withOpacity(0.1),
-                            width: 1,
+                      return Positioned(
+                        left: xPos * 1.sw - bubble.size / 2,
+                        top: yPos * 1.sh,
+                        child: Container(
+                          width: bubble.size,
+                          height: bubble.size,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: bubble.color.withOpacity(0.05),
+                            border: Border.all(
+                              color: bubble.color.withOpacity(0.1),
+                              width: 1,
+                            ),
                           ),
                         ),
+                      );
+                    },
+                  );
+                }),
+
+                // Login Form
+                SafeArea(
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20.w,
+                        vertical: 15.h,
                       ),
-                    );
-                  },
-                );
-              }),
-
-              // Login Form
-              SafeArea(
-                child: Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 20.w,
-                      vertical: 15.h,
-                    ),
-                    child: BlocConsumer<LoginBloc, LoginState>(
-                      listener: (context, state) {
-                        if (state is LoginSuccess) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text('Login successful!'),
-                              backgroundColor: const Color(0xFF0F3460),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                            ),
-                          );
-
-                          _usernameController.clear();
-                          _passwordController.clear();
-
-                          
-                          context.go('/dashboard');
-                        } else if (state is LoginFailure) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(state.error),
-                              backgroundColor: Colors.red.shade700,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      builder: (context, state) {
-                        return Container(
-                          width: 450.w,
-                          constraints: BoxConstraints(
-                            maxHeight: isKeyboardVisible ? 0.8.sh : 0.9.sh,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24.r),
-                            color: const Color.fromARGB(171, 255, 255, 255),
-                            border: Border.all(
-                              color: const Color.fromARGB(43, 0, 0, 0),
-                              width: 0.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
-                                blurRadius: 30.r,
-                                offset: Offset(0, 10.h),
-                                spreadRadius: 0,
-                              ),
-                            ],
-                          ),
-                          // Conditional scroll based on keyboard visibility
-                          child: isKeyboardVisible
-                              ? SingleChildScrollView(
-                                  physics: const ClampingScrollPhysics(),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 30.w,
-                                    vertical: 30.h,
-                                  ),
-                                  child: _buildFormContent(state),
-                                )
-                              : Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 30.w,
-                                    vertical: 30.h,
-                                  ),
-                                  child: _buildFormContent(state),
+                      child: BlocConsumer<LoginBloc, LoginState>(
+                        listener: (context, state) {
+                          if (state is LoginSuccess) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text('Login successful!'),
+                                backgroundColor: const Color(0xFF0F3460),
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
                                 ),
-                        );
-                      },
+                              ),
+                            );
+
+                            _usernameController.clear();
+                            _passwordController.clear();
+
+                            context.go('/dashboard');
+                          } else if (state is LoginFailure) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(state.error),
+                                backgroundColor: Colors.red.shade700,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                        builder: (context, state) {
+                          return Container(
+                            width: 450.w,
+                            constraints: BoxConstraints(
+                              maxHeight: isKeyboardVisible ? 0.8.sh : 0.9.sh,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24.r),
+                              color: const Color.fromARGB(171, 255, 255, 255),
+                              border: Border.all(
+                                color: const Color.fromARGB(43, 0, 0, 0),
+                                width: 0.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 30.r,
+                                  offset: Offset(0, 10.h),
+                                  spreadRadius: 0,
+                                ),
+                              ],
+                            ),
+                            // Conditional scroll based on keyboard visibility
+                            child: isKeyboardVisible
+                                ? SingleChildScrollView(
+                                    physics: const ClampingScrollPhysics(),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 30.w,
+                                      vertical: 30.h,
+                                    ),
+                                    child: _buildFormContent(state),
+                                  )
+                                : Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 30.w,
+                                      vertical: 30.h,
+                                    ),
+                                    child: _buildFormContent(state),
+                                  ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -240,10 +242,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF1A1A2E),
-                  Color(0xFF0F3460),
-                ],
+                colors: [Color(0xFF1A1A2E), Color(0xFF0F3460)],
               ),
             ),
             child: Icon(
@@ -345,15 +344,10 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
           Row(
             children: [
               Expanded(
-                child: Divider(
-                  color: const Color(0xFFE5E7EB),
-                  thickness: 1,
-                ),
+                child: Divider(color: const Color(0xFFE5E7EB), thickness: 1),
               ),
               Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 12.w,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
                 child: Text(
                   'OR',
                   style: TextStyle(
@@ -364,10 +358,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                 ),
               ),
               Expanded(
-                child: Divider(
-                  color: const Color(0xFFE5E7EB),
-                  thickness: 1,
-                ),
+                child: Divider(color: const Color(0xFFE5E7EB), thickness: 1),
               ),
             ],
           ),
@@ -536,11 +527,11 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
       context.read<LoginBloc>().add(
-            LoginSubmitted(
-              username: _usernameController.text.trim(),
-              password: _passwordController.text,
-            ),
-          );
+        LoginSubmitted(
+          username: _usernameController.text.trim(),
+          password: _passwordController.text,
+        ),
+      );
     }
   }
 }

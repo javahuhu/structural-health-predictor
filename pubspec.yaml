@@ -45,6 +45,9 @@ dependencies:
   flutter_dotenv: ^6.0.0
   equatable: ^2.0.8
   get_it: ^9.2.0
+  fl_chart: ^1.1.1
+  camera: ^0.11.3
+  image_picker: ^1.2.1
 
 dev_dependencies:
   flutter_test:
