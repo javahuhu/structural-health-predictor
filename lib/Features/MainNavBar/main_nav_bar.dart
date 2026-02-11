@@ -6,7 +6,6 @@ import 'package:structural_health_predictor/Features/AssesmentDetail/Data/Model/
 import 'package:structural_health_predictor/Features/AssesmentDetail/Domain/Entities/assessment_entity.dart';
 import 'package:structural_health_predictor/Features/Dashboard/Presentation/Page/dashboard.dart';
 import 'package:structural_health_predictor/Features/Profile/Presentation/Page/profile_page.dart';
-import 'package:structural_health_predictor/Features/Scanner/Presentation/Page/scanner_page.dart';
 import 'package:structural_health_predictor/Features/Settings/Presentation/Page/settings_page.dart';
 
 class MainNavigator extends StatefulWidget {
@@ -17,8 +16,11 @@ class MainNavigator extends StatefulWidget {
 }
 
 class _MainNavigatorState extends State<MainNavigator> {
-  int _currentIndex = 0;
+  int _currentIndex = 1;
+
   AssessmentEntity? _currentAssessment;
+  List<AssessmentEntity> _records = [];
+  bool _isDashboardAccessible = false;
 
   final List<Widget> _pages = [];
 
@@ -26,37 +28,59 @@ class _MainNavigatorState extends State<MainNavigator> {
   void initState() {
     super.initState();
 
-    // 🔥 TEMP / DEBUG: inject dummy assessment
-    _currentAssessment = AssessmentEntity(
-      id: '1',
-      name: 'Concrete Beam – Sample Scan',
-      imagePath: 'assets/images/inkcolor.jpg',
-      timestamp: DateTime.now(),
-      crackData: CrackDataModel.sample(),
+    _records = List.generate(
+      5,
+      (i) => AssessmentEntity(
+        id: '$i',
+        name: 'Sample Scan ${i + 1}',
+        imagePath: 'assets/images/inkcolor.jpg',
+        timestamp: DateTime.now().subtract(Duration(days: i)),
+        crackData: CrackDataModel.sample(),
+      ),
     );
 
     _updatePages();
   }
 
+  void _navigateToDashboardFromDetail() {
+    setState(() {
+      _currentIndex = 0;
+      _isDashboardAccessible = true;
+    });
+  }
+
+  void _selectAssessment(AssessmentEntity assessment) {
+    setState(() {
+      _currentAssessment = assessment;
+      _updatePages();
+    });
+  }
+
+  void _clearDashboard() {
+    setState(() {
+      _currentAssessment = null;
+      _isDashboardAccessible = false;
+      _currentIndex = 1;
+      _updatePages();
+    });
+  }
+
   void _updatePages() {
     _pages.clear();
     _pages.addAll([
-      DashboardPage(currentAssessment: _currentAssessment),
-      ScannerPage(onAssessmentSaved: _handleAssessmentSaved),
-      ProfilePage(savedAssessments: [_currentAssessment!]),
+      DashboardPage(
+        currentAssessment: _currentAssessment,
+        onDashboardBack: _clearDashboard,
+      ),
+      RecordsPage(
+        savedAssessments: _records,
+        onSelectAssessment: _selectAssessment,
+        onNavigateToDashboard: _navigateToDashboardFromDetail,
+      ),
       const SettingsPage(),
     ]);
   }
 
-  void _handleAssessmentSaved(AssessmentEntity assessment) {
-    setState(() {
-      _currentAssessment = assessment;
-      _updatePages();
-      _currentIndex = 0; // Navigate back to dashboard
-    });
-  }
-
-  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,7 +89,6 @@ class _MainNavigatorState extends State<MainNavigator> {
         child: Stack(
           children: [
             IndexedStack(index: _currentIndex, children: _pages),
-
             Positioned(
               left: 0,
               right: 0,
@@ -106,24 +129,19 @@ class _MainNavigatorState extends State<MainNavigator> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             _buildNavItem(
+                              icon: Icons.person_rounded,
+                              label: 'Records',
+                              index: 1,
+                            ),
+                            _buildNavItem(
                               icon: Icons.dashboard_rounded,
                               label: 'Reports',
                               index: 0,
                             ),
                             _buildNavItem(
-                              icon: Icons.camera_alt_rounded,
-                              label: 'Scanner',
-                              index: 1,
-                            ),
-                            _buildNavItem(
-                              icon: Icons.person_rounded,
-                              label: 'Profile',
-                              index: 2,
-                            ),
-                            _buildNavItem(
                               icon: Icons.settings_rounded,
                               label: 'Settings',
-                              index: 3,
+                              index: 2,
                             ),
                           ],
                         ),
@@ -148,6 +166,8 @@ class _MainNavigatorState extends State<MainNavigator> {
 
     return GestureDetector(
       onTap: () {
+        if (index == 0 && !_isDashboardAccessible) return;
+
         setState(() {
           _currentIndex = index;
         });
@@ -168,7 +188,9 @@ class _MainNavigatorState extends State<MainNavigator> {
               icon,
               color: isSelected
                   ? const Color(0xFF0F3460)
-                  : const Color(0xFF1A1A2E).withValues(alpha: 1),
+                  : index == 0 && !_isDashboardAccessible
+                  ? const Color.fromARGB(255, 92, 93, 94)
+                  : const Color(0xFF1A1A2E),
               size: 26,
             ),
             const SizedBox(height: 4),
@@ -180,7 +202,6 @@ class _MainNavigatorState extends State<MainNavigator> {
                 color: isSelected
                     ? const Color(0xFF0F3460)
                     : const Color(0xFF1A1A2E).withValues(alpha: 0.4),
-                letterSpacing: 0.2,
               ),
             ),
           ],

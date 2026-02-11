@@ -29,7 +29,7 @@ class CrackDataModel extends CrackData {
       model: 'Faster-RCNN-7\nEfficientNet-B7',
       accuracy: 96,
       runtime: '2m 34s',
-      severityLevel: 'Moderate',
+      severityLevel: 'Structural',
       widthGain: 64,
       lengthGain: 86,
       depthGain: 34,

@@ -4,15 +4,23 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:structural_health_predictor/Features/AssesmentDetail/Domain/Entities/assessment_entity.dart';
 import 'package:structural_health_predictor/Features/AssesmentDetail/Presentation/Page/assessment_detail_page.dart';
 
-class ProfilePage extends StatefulWidget {
+class RecordsPage extends StatefulWidget {
   final List<AssessmentEntity> savedAssessments;
-  const ProfilePage({super.key, required this.savedAssessments});
+  final Function(AssessmentEntity) onSelectAssessment;
+  final VoidCallback onNavigateToDashboard;
+
+  const RecordsPage({
+    super.key,
+    required this.savedAssessments,
+    required this.onSelectAssessment,
+    required this.onNavigateToDashboard,
+  });
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<RecordsPage> createState() => _RecordsPageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _RecordsPageState extends State<RecordsPage> {
   late final List<AssessmentEntity> _savedAssessments;
 
   @override
@@ -36,7 +44,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     Row(
                       children: [
                         Text(
-                          'PROFILE',
+                          'Records',
                           style: TextStyle(
                             fontSize: 25.sp,
                             fontWeight: FontWeight.w700,
@@ -46,68 +54,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 32),
-
-                    // Profile Header
-                    Row(
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFF0F3460),
-                                const Color(0xFF16213E),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'JD',
-                              style: TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'John Doe',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF0F0F0F),
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'john.doe@email.com',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: const Color(
-                                    0xFF1A1A2E,
-                                  ).withOpacity(0.6),
-                                  letterSpacing: 0.2,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
+                     SizedBox(height: 60.h),
 
                     // Stats Row
                     Row(
@@ -172,13 +119,13 @@ class _ProfilePageState extends State<ProfilePage> {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0F3460).withOpacity(0.05),
+                          color: const Color(0xFF0F3460).withValues(alpha: 0.05),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.photo_library_outlined,
                           size: 64,
-                          color: const Color(0xFF0F3460).withOpacity(0.3),
+                          color: const Color(0xFF0F3460).withValues(alpha: 0.3),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -196,7 +143,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         'Capture and save images to see them here',
                         style: TextStyle(
                           fontSize: 14,
-                          color: const Color(0xFF1A1A2E).withOpacity(0.6),
+                          color: const Color(0xFF1A1A2E).withValues(alpha: 0.6),
                           letterSpacing: 0.2,
                         ),
                       ),
@@ -206,7 +153,7 @@ class _ProfilePageState extends State<ProfilePage> {
               )
             else
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 125),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
                     final assessment = _savedAssessments[index];
@@ -217,6 +164,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   }, childCount: _savedAssessments.length),
                 ),
               ),
+
+              
           ],
         ),
       ),
@@ -239,7 +188,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF0F3460).withOpacity(0.1),
+              color: const Color(0xFF0F3460).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, size: 24, color: const Color(0xFF0F3460)),
@@ -259,9 +208,9 @@ class _ProfilePageState extends State<ProfilePage> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: const Color(0xFF1A1A2E).withOpacity(0.6),
+              color: const Color(0xFF1A1A2E).withValues(alpha: 0.6),
               letterSpacing: 0.3,
-            ),
+           ),
           ),
         ],
       ),
@@ -272,14 +221,22 @@ class _ProfilePageState extends State<ProfilePage> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          widget.onSelectAssessment(assessment);
+
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  AssessmentDetailPage(assessment: assessment),
+              builder: (_) => AssessmentDetailPage(assessment: assessment),
             ),
           );
+
+          if (result != null &&
+              result is Map &&
+              result['navigateToDashboard'] == true &&
+              mounted) {
+            widget.onNavigateToDashboard();
+          }
         },
         borderRadius: BorderRadius.circular(16),
         child: Container(
@@ -292,8 +249,8 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.file(
-                  File(assessment.imagePath),
+                child: Image.asset(
+                  assessment.imagePath,
                   width: 72,
                   height: 72,
                   fit: BoxFit.cover,
@@ -301,7 +258,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     return Container(
                       width: 72,
                       height: 72,
-                      color: const Color(0xFF0F3460).withOpacity(0.1),
+                      color: const Color(0xFF0F3460).withValues(alpha: 0.1),
                       child: Icon(
                         Icons.image_outlined,
                         color: const Color(0xFF0F3460),
@@ -330,7 +287,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       _formatDate(assessment.timestamp),
                       style: TextStyle(
                         fontSize: 13,
-                        color: const Color(0xFF1A1A2E).withOpacity(0.6),
+                        color: const Color(0xFF1A1A2E).withValues(alpha: 0.6),
                         letterSpacing: 0.2,
                       ),
                     ),
@@ -361,7 +318,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               Icon(
                 Icons.chevron_right_rounded,
-                color: const Color(0xFF1A1A2E).withOpacity(0.3),
+                color: const Color(0xFF1A1A2E).withValues(alpha: 0.3),
                 size: 24,
               ),
             ],
@@ -391,11 +348,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Color _getSeverityColor(String severity) {
     switch (severity.toLowerCase()) {
-      case 'low':
-        return const Color(0xFF4ECDC4);
-      case 'moderate':
+
+      case 'Structural':
         return const Color(0xFFFF9F40);
-      case 'high':
+      case 'Architectural':
         return const Color(0xFFFF6B6B);
       default:
         return const Color(0xFF0F3460);

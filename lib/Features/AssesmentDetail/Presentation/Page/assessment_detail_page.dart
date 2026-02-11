@@ -1,30 +1,24 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:structural_health_predictor/Features/AssesmentDetail/Domain/Entities/assessment_entity.dart';
-
 
 class AssessmentDetailPage extends StatelessWidget {
   final AssessmentEntity assessment;
 
-  const AssessmentDetailPage({
-    super.key,
-    required this.assessment,
-  });
+  const AssessmentDetailPage({super.key, required this.assessment});
 
   @override
   Widget build(BuildContext context) {
     final data = assessment.crackData;
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_rounded,
-            color: const Color(0xFF0F0F0F),
-          ),
+          icon: Icon(Icons.arrow_back_rounded, color: const Color(0xFF0F0F0F)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -45,8 +39,8 @@ class AssessmentDetailPage extends StatelessWidget {
             // Image
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
-              child: Image.file(
-                File(assessment.imagePath),
+              child: Image.asset(
+                assessment.imagePath,
                 width: double.infinity,
                 height: 280,
                 fit: BoxFit.cover,
@@ -65,7 +59,7 @@ class AssessmentDetailPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Date and Severity
             Row(
               children: [
@@ -109,47 +103,41 @@ class AssessmentDetailPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 32),
-            
+
             // Analysis Summary
-            Text(
-              'Analysis Summary',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F0F0F),
-                letterSpacing: -0.4,
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            _buildDetailCard(
-              title: 'Model',
-              value: data.model,
-              icon: Icons.psychology_outlined,
-            ),
-            const SizedBox(height: 12),
-            
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDetailCard(
-                    title: 'Accuracy',
-                    value: '${data.accuracy}%',
-                    icon: Icons.check_circle_outline,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildDetailCard(
-                    title: 'Runtime',
-                    value: data.runtime,
-                    icon: Icons.timer_outlined,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            
+            // Text(
+            //   'Analysis Summary',
+            //   style: TextStyle(
+            //     fontSize: 20,
+            //     fontWeight: FontWeight.w700,
+            //     color: const Color(0xFF0F0F0F),
+            //     letterSpacing: -0.4,
+            //   ),
+            // ),
+            // const SizedBox(height: 16),
+
+
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       child: _buildDetailCard(
+            //         title: 'Accuracy',
+            //         value: '${data.accuracy}%',
+            //         icon: Icons.check_circle_outline,
+            //       ),
+            //     ),
+            //     const SizedBox(width: 12),
+            //     Expanded(
+            //       child: _buildDetailCard(
+            //         title: 'Runtime',
+            //         value: data.runtime,
+            //         icon: Icons.timer_outlined,
+            //       ),
+            //     ),
+            //   ],
+            // ),
+            // const SizedBox(height: 32),
+
             // Measurements
             Text(
               'Crack Measurements',
@@ -161,31 +149,31 @@ class AssessmentDetailPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             _buildMeasurementCard(
               title: 'Width Gain',
-              value: '${data.widthGain.toInt()}%',
+              value: '${data.widthGain.toInt()} mm',
               icon: Icons.swap_horiz_rounded,
               color: const Color(0xFF0F3460),
             ),
             const SizedBox(height: 12),
-            
+
             _buildMeasurementCard(
               title: 'Length Gain',
-              value: '${data.lengthGain.toInt()}%',
+              value: '${data.lengthGain.toInt()} mm',
               icon: Icons.height_rounded,
               color: const Color(0xFF16213E),
             ),
             const SizedBox(height: 12),
-            
+
             _buildMeasurementCard(
-              title: 'Depth Gain',
-              value: '+${data.depthGain.toInt()}%',
+              title: 'Depth Gain',  
+              value: '+${data.depthGain.toInt()} mm',
               icon: Icons.vertical_align_center_rounded,
               color: const Color(0xFF4ECDC4),
             ),
             const SizedBox(height: 32),
-            
+
             // Performance
             Text(
               'Performance Metrics',
@@ -197,27 +185,49 @@ class AssessmentDetailPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             ...data.performanceMetrics.entries.map((entry) {
               return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _buildMetricBar(
-                  label: entry.key,
-                  value: entry.value,
-                ),
+                padding:  EdgeInsets.only(bottom: 25.h),
+                child: _buildMetricBar(label: entry.key, value: entry.value),
               );
-            }).toList(),
-            const SizedBox(height: 100),
+            }),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                 
+                  Navigator.pop(context, {'navigateToDashboard': true});
+
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F3460),
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'View Full On Dashboard',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+             SizedBox(height: 15.h),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoChip({
-    required IconData icon,
-    required String label,
-  }) {
+  Widget _buildInfoChip({required IconData icon, required String label}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
@@ -227,11 +237,7 @@ class AssessmentDetailPage extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 18,
-            color: const Color(0xFF0F3460),
-          ),
+          Icon(icon, size: 18, color: const Color(0xFF0F3460)),
           const SizedBox(width: 8),
           Text(
             label,
@@ -266,11 +272,7 @@ class AssessmentDetailPage extends StatelessWidget {
               color: const Color(0xFF0F3460).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              size: 24,
-              color: const Color(0xFF0F3460),
-            ),
+            child: Icon(icon, size: 24, color: const Color(0xFF0F3460)),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -314,10 +316,7 @@ class AssessmentDetailPage extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            color,
-            color.withOpacity(0.8),
-          ],
+          colors: [color, color.withOpacity(0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -338,11 +337,7 @@ class AssessmentDetailPage extends StatelessWidget {
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              size: 28,
-              color: Colors.white,
-            ),
+            child: Icon(icon, size: 28, color: Colors.white),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -375,10 +370,7 @@ class AssessmentDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMetricBar({
-    required String label,
-    required double value,
-  }) {
+  Widget _buildMetricBar({required String label, required double value}) {
     Color color;
     if (label == 'Recall') {
       color = const Color(0xFF4ECDC4);
@@ -437,19 +429,27 @@ class AssessmentDetailPage extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     final months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
   Color _getSeverityColor(String severity) {
     switch (severity.toLowerCase()) {
-      case 'low':
-        return const Color(0xFF4ECDC4);
-      case 'moderate':
+      case 'Structural':
         return const Color(0xFFFF9F40);
-      case 'high':
+      case 'Architectural':
         return const Color(0xFFFF6B6B);
       default:
         return const Color(0xFF0F3460);

@@ -3,22 +3,33 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:structural_health_predictor/Features/AssesmentDetail/Domain/Entities/assessment_entity.dart';
 
-
 class DashboardPage extends StatelessWidget {
   final AssessmentEntity? currentAssessment;
+  final VoidCallback? onDashboardBack;
 
-  const DashboardPage({super.key, this.currentAssessment});
+  const DashboardPage({
+    super.key,
+    this.currentAssessment,
+    this.onDashboardBack,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.only(bottom: 80), // Add this padding
-        child: SafeArea(
-          child: currentAssessment == null
-              ? _buildEmptyState()
-              : _buildDashboardContent(),
+    return PopScope(
+      onPopInvoked: (didPop) {
+        if (didPop) {
+          onDashboardBack?.call();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Padding(
+          padding: const EdgeInsets.only(bottom: 80),
+          child: SafeArea(
+            child: currentAssessment == null
+                ? _buildEmptyState()
+                : _buildDashboardContent(),
+          ),
         ),
       ),
     );
@@ -60,8 +71,6 @@ class DashboardPage extends StatelessWidget {
               letterSpacing: 0.2,
             ),
           ),
-
-         
         ],
       ),
     );
@@ -78,16 +87,31 @@ class DashboardPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'DASHBOARD',
-                  style: TextStyle(
-                    fontSize: 35.sp,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0F0F0F),
-                    letterSpacing: 1.5,
-                  ),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: onDashboardBack,
+                      icon: Icon(
+                        Icons.arrow_back_ios_new_outlined,
+                        color: Colors.black,
+                        size: 15.r,
+                      ),
+                    ),
+
+                    SizedBox(width: 5.w),
+                    Text(
+                      'DASHBOARD',
+                      style: TextStyle(
+                        fontSize: 35.sp,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F0F0F),
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
+
+                 SizedBox(height: 50.h),
                 Text(
                   currentAssessment!.name,
                   style: TextStyle(
