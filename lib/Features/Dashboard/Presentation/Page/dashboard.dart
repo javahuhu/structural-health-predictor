@@ -1,15 +1,15 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:structural_health_predictor/Features/AssesmentDetail/Domain/Entities/assessment_entity.dart';
 
 class DashboardPage extends StatelessWidget {
-  final AssessmentEntity? currentAssessment;
+  final InspectionLog? selectedLog;
   final VoidCallback? onDashboardBack;
 
   const DashboardPage({
     super.key,
-    this.currentAssessment,
+    this.selectedLog,
     this.onDashboardBack,
   });
 
@@ -17,16 +17,14 @@ class DashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopScope(
       onPopInvoked: (didPop) {
-        if (didPop) {
-          onDashboardBack?.call();
-        }
+        if (didPop) onDashboardBack?.call();
       },
       child: Scaffold(
         backgroundColor: Colors.white,
         body: Padding(
           padding: const EdgeInsets.only(bottom: 80),
           child: SafeArea(
-            child: currentAssessment == null
+            child: selectedLog == null
                 ? _buildEmptyState()
                 : _buildDashboardContent(),
           ),
@@ -53,18 +51,18 @@ class DashboardPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          Text(
+          const Text(
             'No Current Assessment',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F0F0F),
+              color: Color(0xFF0F0F0F),
               letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 12),
           Text(
-            'Capture an image to start analyzing',
+            'Select a record to view its dashboard',
             style: TextStyle(
               fontSize: 15,
               color: const Color(0xFF1A1A2E).withOpacity(0.6),
@@ -77,7 +75,7 @@ class DashboardPage extends StatelessWidget {
   }
 
   Widget _buildDashboardContent() {
-    final data = currentAssessment!.crackData;
+    final log = selectedLog!;
 
     return CustomScrollView(
       slivers: [
@@ -87,17 +85,16 @@ class DashboardPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Header
                 Row(
                   children: [
                     IconButton(
                       onPressed: onDashboardBack,
-                      icon: Icon(
-                        Icons.arrow_back_ios_new_outlined,
-                        color: Colors.black,
-                        size: 15.r,
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Color(0xFF0F3460),
                       ),
                     ),
-
                     SizedBox(width: 5.w),
                     Text(
                       'DASHBOARD',
@@ -110,47 +107,124 @@ class DashboardPage extends StatelessWidget {
                     ),
                   ],
                 ),
+                SizedBox(height: 20.h),
 
-                 SizedBox(height: 50.h),
+                // Crack Image
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: CachedNetworkImage(
+                    imageUrl: log.imageUrl,
+                    width: double.infinity,
+                    height: 400,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      width: double.infinity,
+                      height: 220,
+                      color: const Color(0xFF0F3460).withOpacity(0.05),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF0F3460),
+                        ),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      width: double.infinity,
+                      height: 220,
+                      color: const Color(0xFF0F3460).withOpacity(0.1),
+                      child: const Icon(
+                        Icons.image_outlined,
+                        color: Color(0xFF0F3460),
+                        size: 64,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 24.h),
+
+                // Device + Timestamp
                 Text(
-                  currentAssessment!.name,
-                  style: TextStyle(
+                  log.deviceId,
+                  style: const TextStyle(
                     fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF0F3460),
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF0F3460),
                     letterSpacing: -0.3,
                   ),
                 ),
-                const SizedBox(height: 35),
-
-                // Filter Row
-                Row(
-                  children: [
-                    _buildFilterChip('All-time'),
-                    const SizedBox(width: 12),
-                    _buildFilterChip('All', isOutline: true),
-                    const SizedBox(width: 12),
-                    _buildFilterChip('All', isOutline: true),
-                  ],
+                const SizedBox(height: 4),
+                Text(
+                  _formatDate(log.timestamp),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: const Color(0xFF1A1A2E).withOpacity(0.5),
+                  ),
                 ),
                 const SizedBox(height: 24),
 
-                // Top Metrics
+                // Type badge
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getTypeColor(log.type),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.warning_rounded,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            log.type,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                // Metrics Grid
+                const Text(
+                  'Inspection Metrics',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0F0F0F),
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
                 Row(
                   children: [
                     Expanded(
                       child: _buildMetricCard(
-                        title: 'Deep Learning Model:',
-                        value: data.model,
-                        subtitle: '',
+                        title: 'Device ID',
+                        value: log.deviceId,
+                        icon: Icons.device_hub_outlined,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildMetricCard(
-                        title: 'Accuracy:',
-                        value: '${data.accuracy}%',
-                        subtitle: '',
+                        title: 'Crack Type',
+                        value: log.type,
+                        icon: Icons.warning_amber_outlined,
                       ),
                     ),
                   ],
@@ -160,61 +234,36 @@ class DashboardPage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _buildMetricCard(
-                        title: 'Runtime:',
-                        value: data.runtime,
-                        subtitle: '',
+                        title: 'Power (W)',
+                        value: log.powerW.toStringAsFixed(2),
+                        icon: Icons.bolt_outlined,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildMetricCard(
-                        title: 'Severity Level',
-                        value: data.severityLevel,
-                        subtitle: '',
+                        title: 'RUL (Days)',
+                        value: '${log.rulDays}',
+                        icon: Icons.timer_outlined,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
 
-                // Gain Metrics
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildGainCard(
-                        title: 'Width Gain',
-                        percentage: data.widthGain,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildGainCard(
-                        title: 'Length Gain',
-                        percentage: data.lengthGain,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildGainCard(
-                        title: 'Depth Gain',
-                        percentage: data.depthGain,
-                        isPositive: true,
-                      ),
-                    ),
-                  ],
+                // Depth card
+                const Text(
+                  'Crack Measurement',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0F0F0F),
+                    letterSpacing: -0.3,
+                  ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
-                // Chart
-                _buildChartCard(data.dailyData),
-                const SizedBox(height: 24),
-
-                // Parameters
-                _buildParametersCard(data.parameters),
-                const SizedBox(height: 24),
-
-                // Performance Metrics
-                _buildPerformanceCard(data.performanceMetrics),
+                _buildDepthCard(log.depthCm),
                 const SizedBox(height: 100),
               ],
             ),
@@ -224,47 +273,10 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _buildFilterChip(String label, {bool isOutline = false}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isOutline
-            ? Colors.white
-            : const Color(0xFF0F3460).withOpacity(0.08),
-        border: isOutline
-            ? Border.all(color: const Color(0xFF1A1A2E).withOpacity(0.2))
-            : null,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF0F0F0F),
-              letterSpacing: 0.2,
-            ),
-          ),
-          if (isOutline) ...[
-            const SizedBox(width: 4),
-            Icon(
-              Icons.keyboard_arrow_down_rounded,
-              size: 18,
-              color: const Color(0xFF0F0F0F),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   Widget _buildMetricCard({
     required String title,
     required String value,
-    required String subtitle,
+    required IconData icon,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -275,76 +287,51 @@ class DashboardPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF1A1A2E).withOpacity(0.6),
-              letterSpacing: 0.3,
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F3460).withOpacity(0.08),
+              borderRadius: BorderRadius.circular(10),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF0F0F0F),
-              height: 1.2,
-              letterSpacing: -0.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGainCard({
-    required String title,
-    required double percentage,
-    bool isPositive = false,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FA),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF1A1A2E).withOpacity(0.6),
-              letterSpacing: 0.3,
-            ),
+            child: Icon(icon, size: 20, color: const Color(0xFF0F3460)),
           ),
           const SizedBox(height: 12),
           Text(
-            '${percentage.toInt()}%',
+            title,
             style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF0F0F0F),
-              letterSpacing: -0.5,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF1A1A2E).withOpacity(0.6),
+              letterSpacing: 0.3,
             ),
           ),
-          const SizedBox(height: 8),
-          // Wave indicator
-          CustomPaint(
-            size: const Size(double.infinity, 20),
-            painter: WavePainter(isPositive: isPositive),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF0F0F0F),
+              height: 1.2,
+              letterSpacing: -0.3,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildChartCard(List<DailyData> data) {
+  Widget _buildDepthCard(double depthCm) {
+    // Normalize depth for visual bar — assuming max meaningful depth is 20cm
+    final normalized = (depthCm / 20.0).clamp(0.0, 1.0);
+    final color = depthCm > 10
+        ? const Color(0xFFFF6B6B)
+        : depthCm > 5
+            ? const Color(0xFFFF9F40)
+            : const Color(0xFF4ECDC4);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -357,287 +344,94 @@ class DashboardPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Day',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF1A1A2E).withOpacity(0.6),
-                  letterSpacing: 0.3,
-                ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.vertical_align_center_rounded,
+                      size: 20,
+                      color: color,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Depth',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF0F0F0F),
+                    ),
+                  ),
+                ],
               ),
-              Icon(
-                Icons.keyboard_arrow_down_rounded,
-                size: 18,
-                color: const Color(0xFF1A1A2E).withOpacity(0.6),
+              Text(
+                '${depthCm.toStringAsFixed(2)} cm',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                  letterSpacing: -0.3,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          SizedBox(
-            height: 180,
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: 800,
-                barTouchData: BarTouchData(enabled: false),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        if (value.toInt() >= 0 && value.toInt() < data.length) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              data[value.toInt()].day.split(' ')[1],
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: const Color(0xFF1A1A2E).withOpacity(0.4),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          );
-                        }
-                        return const Text('');
-                      },
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 40,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: const Color(0xFF1A1A2E).withOpacity(0.4),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  topTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                ),
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: 200,
-                  getDrawingHorizontalLine: (value) {
-                    return FlLine(
-                      color: const Color(0xFF1A1A2E).withOpacity(0.05),
-                      strokeWidth: 1,
-                    );
-                  },
-                ),
-                borderData: FlBorderData(show: false),
-                barGroups: data.asMap().entries.map((entry) {
-                  return BarChartGroupData(
-                    x: entry.key,
-                    barRods: [
-                      BarChartRodData(
-                        toY: entry.value.value,
-                        color: const Color(0xFF0F3460),
-                        width: 12,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ],
-                  );
-                }).toList(),
-              ),
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: normalized,
+              backgroundColor: color.withOpacity(0.1),
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+              minHeight: 10,
             ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '0 cm',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: const Color(0xFF1A1A2E).withOpacity(0.4),
+                ),
+              ),
+              Text(
+                '20 cm',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: const Color(0xFF1A1A2E).withOpacity(0.4),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildParametersCard(Map<String, double> parameters) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FA),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Parameters',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F0F0F),
-              letterSpacing: 0.3,
-            ),
-          ),
-          const SizedBox(height: 20),
-          ...parameters.entries.map((entry) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: _buildProgressBar(
-                label: entry.key,
-                value: entry.value,
-                color: entry.key == 'Width'
-                    ? const Color(0xFFFF6B6B)
-                    : const Color(0xFFFF9F40),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
+  String _formatDate(DateTime date) {
+    const months = [
+      'January', 'February', 'March', 'April',
+      'May', 'June', 'July', 'August',
+      'September', 'October', 'November', 'December',
+    ];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
-  Widget _buildPerformanceCard(Map<String, double> metrics) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FA),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Performance Metrics',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F0F0F),
-              letterSpacing: 0.3,
-            ),
-          ),
-          const SizedBox(height: 20),
-          ...metrics.entries.map((entry) {
-            Color color;
-            if (entry.key == 'Recall') {
-              color = const Color.fromARGB(255, 146, 206, 202);
-            } else if (entry.key == 'F1 Score') {
-              color = const Color(0xFF0F3460);
-            } else {
-              color = const Color.fromARGB(255, 109, 91, 214);
-            }
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: _buildProgressBar(
-                label: entry.key,
-                value: entry.value,
-                color: color,
-              ),
-            );
-          }).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressBar({
-    required String label,
-    required double value,
-    required Color color,
-  }) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(Icons.analytics_outlined, size: 16, color: color),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF0F0F0F),
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ],
-            ),
-            Text(
-              '${value.toInt()}%',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF0F0F0F),
-                letterSpacing: 0.2,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: value / 100,
-            backgroundColor: color.withOpacity(0.1),
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-            minHeight: 8,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class WavePainter extends CustomPainter {
-  final bool isPositive;
-
-  WavePainter({required this.isPositive});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = isPositive ? const Color(0xFF4ECDC4) : const Color(0xFF0F3460)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    final path = Path();
-    final waveHeight = size.height * 0.3;
-    final waveWidth = size.width / 4;
-
-    path.moveTo(0, size.height / 2);
-
-    for (double i = 0; i < size.width; i += waveWidth) {
-      path.quadraticBezierTo(
-        i + waveWidth / 2,
-        size.height / 2 - waveHeight,
-        i + waveWidth,
-        size.height / 2,
-      );
-      if (i + waveWidth < size.width) {
-        path.quadraticBezierTo(
-          i + waveWidth * 1.5,
-          size.height / 2 + waveHeight,
-          i + waveWidth * 2,
-          size.height / 2,
-        );
-      }
+  Color _getTypeColor(String type) {
+    switch (type.toLowerCase()) {
+      case 'structural':
+        return const Color(0xFFFF9F40);
+      case 'architectural':
+        return const Color(0xFFFF6B6B);
+      default:
+        return const Color(0xFF0F3460);
     }
-
-    canvas.drawPath(path, paint);
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

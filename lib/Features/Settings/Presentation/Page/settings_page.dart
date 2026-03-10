@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -26,11 +29,11 @@ class SettingsPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Help & Support Section
                     _buildSectionHeader('Help & Support'),
                     const SizedBox(height: 16),
-                    
+
                     _buildSettingsTile(
                       icon: Icons.help_outline_rounded,
                       title: 'FAQ',
@@ -40,7 +43,7 @@ class SettingsPage extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 12),
-                    
+
                     _buildSettingsTile(
                       icon: Icons.contact_support_outlined,
                       title: 'Contact Support',
@@ -50,7 +53,7 @@ class SettingsPage extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 12),
-                    
+
                     _buildSettingsTile(
                       icon: Icons.book_outlined,
                       title: 'User Guide',
@@ -60,11 +63,11 @@ class SettingsPage extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // About Section
                     _buildSectionHeader('About'),
                     const SizedBox(height: 16),
-                    
+
                     _buildSettingsTile(
                       icon: Icons.info_outline_rounded,
                       title: 'About App',
@@ -74,7 +77,7 @@ class SettingsPage extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 12),
-                    
+
                     _buildSettingsTile(
                       icon: Icons.privacy_tip_outlined,
                       title: 'Privacy Policy',
@@ -84,7 +87,7 @@ class SettingsPage extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 12),
-                    
+
                     _buildSettingsTile(
                       icon: Icons.description_outlined,
                       title: 'Terms of Service',
@@ -94,11 +97,11 @@ class SettingsPage extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Account Section
                     _buildSectionHeader('Account'),
                     const SizedBox(height: 16),
-                    
+
                     _buildSettingsTile(
                       icon: Icons.logout_rounded,
                       title: 'Log Out',
@@ -154,15 +157,15 @@ class SettingsPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isDestructive 
-                      ? const Color(0xFFFF6B6B).withOpacity(0.1)
-                      : const Color(0xFF0F3460).withOpacity(0.1),
+                  color: isDestructive
+                      ? const Color(0xFFFF6B6B).withValues(alpha: 0.1)
+                      : const Color(0xFF0F3460).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   icon,
                   size: 24,
-                  color: isDestructive 
+                  color: isDestructive
                       ? const Color(0xFFFF6B6B)
                       : const Color(0xFF0F3460),
                 ),
@@ -177,7 +180,7 @@ class SettingsPage extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: isDestructive 
+                        color: isDestructive
                             ? const Color(0xFFFF6B6B)
                             : const Color(0xFF0F0F0F),
                         letterSpacing: -0.2,
@@ -188,7 +191,7 @@ class SettingsPage extends StatelessWidget {
                       subtitle,
                       style: TextStyle(
                         fontSize: 13,
-                        color: const Color(0xFF1A1A2E).withOpacity(0.6),
+                        color: const Color(0xFF1A1A2E).withValues(alpha: 0.6),
                         letterSpacing: 0.2,
                       ),
                     ),
@@ -197,7 +200,7 @@ class SettingsPage extends StatelessWidget {
               ),
               Icon(
                 Icons.chevron_right_rounded,
-                color: const Color(0xFF1A1A2E).withOpacity(0.3),
+                color: const Color(0xFF1A1A2E).withValues(alpha: 0.3),
                 size: 24,
               ),
             ],
@@ -211,9 +214,7 @@ class SettingsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         contentPadding: const EdgeInsets.all(24),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -285,9 +286,7 @@ class SettingsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         contentPadding: const EdgeInsets.all(24),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -296,10 +295,7 @@ class SettingsPage extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF0F3460),
-                    const Color(0xFF16213E),
-                  ],
+                  colors: [const Color(0xFF0F3460), const Color(0xFF16213E)],
                 ),
                 shape: BoxShape.circle,
               ),
@@ -373,9 +369,7 @@ class SettingsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         contentPadding: const EdgeInsets.all(24),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -442,18 +436,22 @@ class SettingsPage extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Logged out successfully'),
-                          backgroundColor: const Color(0xFF4ECDC4),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                    onPressed: () async {
+                      await FirebaseAuth.instance.signOut();
+                      if (context.mounted) {
+                        context.go('/login');
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Logged out successfully'),
+                            backgroundColor: const Color(0xFF4ECDC4),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFF6B6B),

@@ -1,11 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:structural_health_predictor/Features/LogIn/Domain/Entities/log_in_entities.dart';
 import 'package:structural_health_predictor/Features/LogIn/Domain/Repositories_abstract/log_in_repository_abstract.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginRepositoryImpl implements LogInRepositoryAbstract {
-  final SupabaseClient supabaseClient;
+  final FirebaseAuth firebaseAuth;
 
-LoginRepositoryImpl({required this.supabaseClient});
+  LoginRepositoryImpl({required this.firebaseAuth});
 
   @override
   Future<LogInEntities> login({
@@ -15,16 +16,20 @@ LoginRepositoryImpl({required this.supabaseClient});
     String email = username;
 
     if (!username.contains('@')) {
-      final res = await supabaseClient
-          .from('profiles')
-          .select('email')
-          .eq('username', username)
-          .single();
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('username', isEqualTo: username)
+          .limit(1)
+          .get();
 
-      email = res['email'];
+      if (querySnapshot.docs.isEmpty) {
+        throw Exception('User not found');
+      }
+
+      email = querySnapshot.docs.first['email'];
     }
 
-    final response = await supabaseClient.auth.signInWithPassword(
+    final response = await firebaseAuth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );

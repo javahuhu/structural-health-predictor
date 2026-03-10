@@ -1,14 +1,18 @@
 // lib/features/signup/data/repositories/signup_repository_impl.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:structural_health_predictor/Features/signup/Domain/Entities/signup_entities.dart';
 import 'package:structural_health_predictor/Features/signup/Domain/Repositories_abstract/signup_repository_abstract.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 
 class SignupRepositoryImpl implements SignupRepositoryAbstract {
-  final SupabaseClient
-  supabaseClient; 
+  final FirebaseAuth firebaseAuth;
+  final FirebaseFirestore firebaseFirestore;
 
-  SignupRepositoryImpl({required this.supabaseClient}); 
+  SignupRepositoryImpl({
+    required this.firebaseAuth,
+    required this.firebaseFirestore,
+  });
 
   @override
   Future<SignupEntities> signup({
@@ -17,21 +21,26 @@ class SignupRepositoryImpl implements SignupRepositoryAbstract {
     required String password,
     required String confirmPassword,
   }) async {
-    // Password validation
     if (password != confirmPassword) {
       throw Exception('Passwords do not match');
     }
 
-    // Signup with Supabase
-    final response = await supabaseClient.auth.signUp(
+    UserCredential userCredential = await firebaseAuth.createUserWithEmailAndPassword(
       email: email.trim(),
       password: password,
-      data: {'username': username.trim(), 'email': email.trim()},
     );
 
-    if (response.user == null) {
+    User? user = userCredential.user;
+
+    if (user == null) {
       throw Exception('Signup failed');
     }
+
+    await firebaseFirestore.collection('users').doc(user.uid).set({
+      'username': username,
+      'email': email,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
 
     return SignupEntities(
       username: username,

@@ -1,50 +1,21 @@
-class AssessmentEntity {
+class InspectionLog {
   final String id;
-  final String name;
-  final String imagePath;
+  final String deviceId;
+  final String imageUrl;
   final DateTime timestamp;
-  final CrackData crackData;
+  final double depthCm;
+  final double powerW;
+  final int rulDays;
+  final String type;
 
-  AssessmentEntity({
+  InspectionLog({
     required this.id,
-    required this.name,
-    required this.imagePath,
+    required this.deviceId,
+    required this.imageUrl,
     required this.timestamp,
-    required this.crackData,
+    required this.depthCm,
+    required this.powerW,
+    required this.rulDays,
+    required this.type,
   });
-}
-
-class CrackData {
-  final String model;
-  final double accuracy;
-  final String runtime;
-  final String severityLevel;
-  final double widthGain;
-  final double lengthGain;
-  final double depthGain;
-  final Map<String, double> parameters;
-  final Map<String, double> performanceMetrics;
-  final List<DailyData> dailyData;
-
-  CrackData({
-    required this.model,
-    required this.accuracy,
-    required this.runtime,
-    required this.severityLevel,
-    required this.widthGain,
-    required this.lengthGain,
-    required this.depthGain,
-    required this.parameters,
-    required this.performanceMetrics,
-    required this.dailyData,
-  });
-
-  
-}
-
-class DailyData {
-  final String day;
-  final double value;
-
-  DailyData({required this.day, required this.value});
 }
