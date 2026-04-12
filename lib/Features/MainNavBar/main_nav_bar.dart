@@ -2,10 +2,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:structural_health_predictor/Features/AssesmentDetail/Domain/Entities/assessment_entity.dart';
-import 'package:structural_health_predictor/Features/AssesmentDetail/Presentation/Bloc/assesment_bloc.dart';
-import 'package:structural_health_predictor/Features/AssesmentDetail/Presentation/Bloc/assesment_event.dart';
-import 'package:structural_health_predictor/Features/AssesmentDetail/Presentation/Bloc/assesment_state.dart';
+import 'package:structural_health_predictor/Features/Dashboard/Domain/Entities/inspection_log_entity.dart';
+import 'package:structural_health_predictor/Features/Dashboard/Presentation/Bloc/dashboard_bloc.dart';
+import 'package:structural_health_predictor/Features/Dashboard/Presentation/Bloc/dashboard_event.dart';
+import 'package:structural_health_predictor/Features/Dashboard/Presentation/Bloc/dashboard_state.dart';
 import 'package:structural_health_predictor/Features/Dashboard/Presentation/Page/dashboard.dart';
 import 'package:structural_health_predictor/Features/Profile/Presentation/Page/profile_page.dart';
 import 'package:structural_health_predictor/Features/Settings/Presentation/Page/settings_page.dart';
@@ -20,24 +20,19 @@ class MainNavigator extends StatefulWidget {
 class _MainNavigatorState extends State<MainNavigator> {
   int _currentIndex = 1;
   InspectionLog? _selectedLog;
+  int? _selectedRecordNumber;
   bool _isDashboardAccessible = false;
 
   @override
   void initState() {
     super.initState();
-    // Fire the event to start listening to Firestore
-    context.read<InspectionBloc>().add(const WatchInspectionLogsStarted());
+    context.read<DashboardBloc>().add(const DashboardStarted());
   }
 
-  void _onSelectLog(InspectionLog log) {
+  void _onSelectLog(InspectionLog log, int index) {
     setState(() {
       _selectedLog = log;
-      _isDashboardAccessible = true;
-    });
-  }
-
-  void _onNavigateToDashboard() {
-    setState(() {
+      _selectedRecordNumber = index + 1;
       _currentIndex = 0;
       _isDashboardAccessible = true;
     });
@@ -46,29 +41,56 @@ class _MainNavigatorState extends State<MainNavigator> {
   void _clearDashboard() {
     setState(() {
       _selectedLog = null;
+      _selectedRecordNumber = null;
       _isDashboardAccessible = false;
       _currentIndex = 1;
     });
   }
 
+  InspectionLog? _resolveSelectedLog(List<InspectionLog> logs) {
+    final selectedLog = _selectedLog;
+    if (selectedLog == null) return null;
+
+    for (final log in logs) {
+      if (log.id == selectedLog.id) {
+        return log;
+      }
+    }
+
+    return selectedLog;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<InspectionBloc, InspectionState>(
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
-        final logs = state is InspectionLoaded ? state.logs : <InspectionLog>[];
-        final errorMessage = state is InspectionError ? state.message : null;
+        final logs = state.logs;
+        final errorMessage = state.errorMessage;
+        final selectedLog = _resolveSelectedLog(logs);
 
         final pages = [
           DashboardPage(
-            selectedLog: _selectedLog,
+            selectedLog: selectedLog,
+            selectedRecordNumber: _selectedRecordNumber,
             onDashboardBack: _clearDashboard,
           ),
           RecordsPage(
             logs: logs,
-            isLoading: state is InspectionLoading,
+            isLoading: state.isLoading,
+            isRefreshing: state.isRefreshing,
+            isLoadingMore: state.isLoadingMore,
+            hasMore: state.hasMore,
             errorMessage: errorMessage,
             onSelectLog: _onSelectLog,
-            onNavigateToDashboard: _onNavigateToDashboard,
+            onRefresh: () => context.read<DashboardBloc>().refreshLogs(),
+            onLoadMore: () {
+              context.read<DashboardBloc>().add(
+                const DashboardLoadMoreRequested(),
+              );
+            },
           ),
           const SettingsPage(),
         ];
@@ -89,21 +111,20 @@ class _MainNavigatorState extends State<MainNavigator> {
                       vertical: 15.h,
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16.r),
+                      borderRadius: BorderRadius.circular(999.r),
                       child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.18),
+                            color: colorScheme.surface.withValues(alpha: 0.24),
                             borderRadius: BorderRadius.circular(16.r),
                             border: Border.all(
-                              color: const Color.fromARGB(255, 24, 23, 23)
-                                  .withValues(alpha: 0.05),
+                              color: theme.dividerColor,
                               width: 1,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.03),
+                                color: Colors.black.withValues(alpha: 0.07),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -154,6 +175,8 @@ class _MainNavigatorState extends State<MainNavigator> {
     required int index,
   }) {
     final isSelected = _currentIndex == index;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return GestureDetector(
       onTap: () {
@@ -162,24 +185,24 @@ class _MainNavigatorState extends State<MainNavigator> {
       },
       behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF0F3460).withValues(alpha: 0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(16.r),
-        ),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 3.h),
+      //  decoration: BoxDecoration(
+      //     color: isSelected
+      //         ? colorScheme.primary.withValues(alpha: 0.14)
+      //         : Colors.transparent,
+      //     borderRadius: BorderRadius.circular(18.r),
+      //   ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
               color: isSelected
-                  ? const Color(0xFF0F3460)
+                  ? colorScheme.primary
                   : index == 0 && !_isDashboardAccessible
-                      ? const Color.fromARGB(255, 92, 93, 94)
-                      : const Color(0xFF1A1A2E),
-              size: 26,
+                      ? theme.disabledColor
+                      : colorScheme.onSurface,
+              size: 22.r,
             ),
             const SizedBox(height: 4),
             Text(
@@ -188,8 +211,8 @@ class _MainNavigatorState extends State<MainNavigator> {
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: isSelected
-                    ? const Color(0xFF0F3460)
-                    : const Color(0xFF1A1A2E).withValues(alpha: 0.4),
+                    ? colorScheme.primary
+                    : colorScheme.onSurface.withValues(alpha: 0.45),
               ),
             ),
           ],

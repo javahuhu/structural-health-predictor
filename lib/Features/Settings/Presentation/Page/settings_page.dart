@@ -1,15 +1,20 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:structural_health_predictor/Features/Settings/Presentation/Page/faq_page.dart';
+import 'package:structural_health_predictor/core/theme/theme_controller.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final themeController = ThemeControllerScope.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -24,51 +29,61 @@ class SettingsPage extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0F0F0F),
+                        color: colorScheme.onSurface,
                         letterSpacing: 1.5,
                       ),
                     ),
                     const SizedBox(height: 32),
 
-                    // Help & Support Section
-                    _buildSectionHeader('Help & Support'),
+                    _buildSectionHeader(context, 'Appearance'),
                     const SizedBox(height: 16),
 
                     _buildSettingsTile(
+                      context: context,
+                      icon: themeController.isDarkMode
+                          ? Icons.dark_mode_rounded
+                          : Icons.light_mode_rounded,
+                      title: 'Night Mode',
+                      subtitle: themeController.isDarkMode
+                          ? 'Dark palette is active'
+                          : 'Light palette is active',
+                      onTap: () =>
+                          themeController.toggleTheme(!themeController.isDarkMode),
+                      trailing: Switch.adaptive(
+                        value: themeController.isDarkMode,
+                        activeColor: colorScheme.primary,
+                        onChanged: themeController.toggleTheme,
+                      ),
+                      showChevron: false,
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Help & Support Section
+                    _buildSectionHeader(context, 'Help & Support'),
+                    const SizedBox(height: 16),
+
+                    _buildSettingsTile(
+                      context: context,
                       icon: Icons.help_outline_rounded,
                       title: 'FAQ',
                       subtitle: 'Frequently asked questions',
                       onTap: () {
-                        _showComingSoonDialog(context);
-                      },
-                    ),
-                    const SizedBox(height: 12),
-
-                    _buildSettingsTile(
-                      icon: Icons.contact_support_outlined,
-                      title: 'Contact Support',
-                      subtitle: 'Get help from our team',
-                      onTap: () {
-                        _showComingSoonDialog(context);
-                      },
-                    ),
-                    const SizedBox(height: 12),
-
-                    _buildSettingsTile(
-                      icon: Icons.book_outlined,
-                      title: 'User Guide',
-                      subtitle: 'Learn how to use the app',
-                      onTap: () {
-                        _showComingSoonDialog(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FaqPage(),
+                          ),
+                        );
                       },
                     ),
                     const SizedBox(height: 32),
 
                     // About Section
-                    _buildSectionHeader('About'),
+                    _buildSectionHeader(context, 'About'),
                     const SizedBox(height: 16),
 
                     _buildSettingsTile(
+                      context: context,
                       icon: Icons.info_outline_rounded,
                       title: 'About App',
                       subtitle: 'Version 1.0.0',
@@ -76,33 +91,14 @@ class SettingsPage extends StatelessWidget {
                         _showAboutDialog(context);
                       },
                     ),
-                    const SizedBox(height: 12),
-
-                    _buildSettingsTile(
-                      icon: Icons.privacy_tip_outlined,
-                      title: 'Privacy Policy',
-                      subtitle: 'How we protect your data',
-                      onTap: () {
-                        _showComingSoonDialog(context);
-                      },
-                    ),
-                    const SizedBox(height: 12),
-
-                    _buildSettingsTile(
-                      icon: Icons.description_outlined,
-                      title: 'Terms of Service',
-                      subtitle: 'Read our terms',
-                      onTap: () {
-                        _showComingSoonDialog(context);
-                      },
-                    ),
                     const SizedBox(height: 32),
 
                     // Account Section
-                    _buildSectionHeader('Account'),
+                    _buildSectionHeader(context, 'Account'),
                     const SizedBox(height: 16),
 
                     _buildSettingsTile(
+                      context: context,
                       icon: Icons.logout_rounded,
                       title: 'Log Out',
                       subtitle: 'Sign out of your account',
@@ -111,7 +107,7 @@ class SettingsPage extends StatelessWidget {
                       },
                       isDestructive: true,
                     ),
-                    const SizedBox(height: 100),
+                    const SizedBox(height: 80),
                   ],
                 ),
               ),
@@ -122,25 +118,32 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Text(
       title,
       style: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w700,
-        color: const Color(0xFF0F0F0F),
+        color: colorScheme.onSurface,
         letterSpacing: -0.3,
       ),
     );
   }
 
   Widget _buildSettingsTile({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
     bool isDestructive = false,
+    Widget? trailing,
+    bool showChevron = true,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -149,8 +152,9 @@ class SettingsPage extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFF8F9FA),
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: theme.dividerColor),
           ),
           child: Row(
             children: [
@@ -158,16 +162,16 @@ class SettingsPage extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: isDestructive
-                      ? const Color(0xFFFF6B6B).withValues(alpha: 0.1)
-                      : const Color(0xFF0F3460).withValues(alpha: 0.1),
+                      ? colorScheme.error.withValues(alpha: 0.12)
+                      : colorScheme.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   icon,
                   size: 24,
                   color: isDestructive
-                      ? const Color(0xFFFF6B6B)
-                      : const Color(0xFF0F3460),
+                      ? colorScheme.error
+                      : colorScheme.primary,
                 ),
               ),
               const SizedBox(width: 16),
@@ -181,8 +185,8 @@ class SettingsPage extends StatelessWidget {
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: isDestructive
-                            ? const Color(0xFFFF6B6B)
-                            : const Color(0xFF0F0F0F),
+                            ? colorScheme.error
+                            : colorScheme.onSurface,
                         letterSpacing: -0.2,
                       ),
                     ),
@@ -191,18 +195,20 @@ class SettingsPage extends StatelessWidget {
                       subtitle,
                       style: TextStyle(
                         fontSize: 13,
-                        color: const Color(0xFF1A1A2E).withValues(alpha: 0.6),
+                        color: colorScheme.onSurface.withValues(alpha: 0.65),
                         letterSpacing: 0.2,
                       ),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: const Color(0xFF1A1A2E).withValues(alpha: 0.3),
-                size: 24,
-              ),
+              if (trailing != null) trailing,
+              if (showChevron)
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: colorScheme.onSurface.withValues(alpha: 0.3),
+                  size: 24,
+                ),
             ],
           ),
         ),
@@ -210,83 +216,15 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  void _showComingSoonDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        contentPadding: const EdgeInsets.all(24),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F3460).withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.access_time_rounded,
-                size: 48,
-                color: const Color(0xFF0F3460),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Coming Soon',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F0F0F),
-                letterSpacing: -0.4,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'This feature is currently under development and will be available soon.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: const Color(0xFF1A1A2E).withOpacity(0.6),
-                letterSpacing: 0.2,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0F3460),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  'Got it',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _showAboutDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: theme.dialogTheme.backgroundColor,
+        shape: theme.dialogTheme.shape,
         contentPadding: const EdgeInsets.all(24),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -295,11 +233,14 @@ class SettingsPage extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [const Color(0xFF0F3460), const Color(0xFF16213E)],
+                  colors: [
+                    colorScheme.primary,
+                    colorScheme.primary.withValues(alpha: 0.72),
+                  ],
                 ),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.analytics_outlined,
                 size: 48,
                 color: Colors.white,
@@ -311,7 +252,7 @@ class SettingsPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F0F0F),
+                color: colorScheme.onSurface,
                 letterSpacing: -0.4,
               ),
             ),
@@ -320,7 +261,7 @@ class SettingsPage extends StatelessWidget {
               'Version 1.0.0',
               style: TextStyle(
                 fontSize: 14,
-                color: const Color(0xFF1A1A2E).withOpacity(0.6),
+                color: colorScheme.onSurface.withValues(alpha: 0.65),
                 letterSpacing: 0.2,
               ),
             ),
@@ -330,7 +271,7 @@ class SettingsPage extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: const Color(0xFF1A1A2E).withOpacity(0.8),
+                color: colorScheme.onSurface.withValues(alpha: 0.82),
                 letterSpacing: 0.2,
                 height: 1.5,
               ),
@@ -341,14 +282,14 @@ class SettingsPage extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0F3460),
+                  backgroundColor: colorScheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   elevation: 0,
                 ),
-                child: Text(
+                child: const Text(
                   'Close',
                   style: TextStyle(
                     fontSize: 16,
@@ -366,10 +307,14 @@ class SettingsPage extends StatelessWidget {
   }
 
   void _showLogoutDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: theme.dialogTheme.backgroundColor,
+        shape: theme.dialogTheme.shape,
         contentPadding: const EdgeInsets.all(24),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -377,13 +322,13 @@ class SettingsPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF6B6B).withOpacity(0.1),
+                color: colorScheme.error.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.logout_rounded,
                 size: 48,
-                color: const Color(0xFFFF6B6B),
+                color: colorScheme.error,
               ),
             ),
             const SizedBox(height: 20),
@@ -392,7 +337,7 @@ class SettingsPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F0F0F),
+                color: colorScheme.onSurface,
                 letterSpacing: -0.4,
               ),
             ),
@@ -402,7 +347,7 @@ class SettingsPage extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: const Color(0xFF1A1A2E).withOpacity(0.6),
+                color: colorScheme.onSurface.withValues(alpha: 0.65),
                 letterSpacing: 0.2,
                 height: 1.5,
               ),
@@ -419,7 +364,7 @@ class SettingsPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       side: BorderSide(
-                        color: const Color(0xFF1A1A2E).withOpacity(0.2),
+                        color: colorScheme.onSurface.withValues(alpha: 0.18),
                       ),
                     ),
                     child: Text(
@@ -427,7 +372,7 @@ class SettingsPage extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF0F0F0F),
+                        color: colorScheme.onSurface,
                         letterSpacing: 0.2,
                       ),
                     ),
@@ -444,7 +389,7 @@ class SettingsPage extends StatelessWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: const Text('Logged out successfully'),
-                            backgroundColor: const Color(0xFF4ECDC4),
+                            backgroundColor: colorScheme.secondary,
                             behavior: SnackBarBehavior.floating,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -454,14 +399,14 @@ class SettingsPage extends StatelessWidget {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF6B6B),
+                      backgroundColor: colorScheme.error,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       elevation: 0,
                     ),
-                    child: Text(
+                    child: const Text(
                       'Log Out',
                       style: TextStyle(
                         fontSize: 16,

@@ -150,7 +150,7 @@ class _SignupPageWidgetState extends State<SignupPageWidget>
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: const Text(
-                                  'Signup successfully Please Proceed to Login',
+                                  'Signed up successfully! Please proceed to Login.',
                                 ),
                                 backgroundColor: const Color(0xFF0F3460),
                                 behavior: SnackBarBehavior.floating,

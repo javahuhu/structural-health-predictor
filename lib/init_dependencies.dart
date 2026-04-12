@@ -2,11 +2,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
-import 'package:structural_health_predictor/Features/AssesmentDetail/Data/DataSource/assesment_remote_data_source.dart';
-import 'package:structural_health_predictor/Features/AssesmentDetail/Data/RepositoryImplementation/assesment_repository_impl.dart';
-import 'package:structural_health_predictor/Features/AssesmentDetail/Domain/RepositoriesAbstract/assesment_abstract.dart';
-import 'package:structural_health_predictor/Features/AssesmentDetail/Domain/UseCase/assesment_usecase.dart';
-import 'package:structural_health_predictor/Features/AssesmentDetail/Presentation/Bloc/assesment_bloc.dart';
+import 'package:structural_health_predictor/Features/Dashboard/Data/DataSource/dashboard_remote_data_source.dart';
+import 'package:structural_health_predictor/Features/Dashboard/Data/RepositoryImplementation/dashboard_repository_impl.dart';
+import 'package:structural_health_predictor/Features/Dashboard/Domain/RepositoriesAbstract/dashboard_repository.dart';
+import 'package:structural_health_predictor/Features/Dashboard/Domain/UseCase/dashboard_usecase.dart';
+import 'package:structural_health_predictor/Features/Dashboard/Presentation/Bloc/dashboard_bloc.dart';
 import 'package:structural_health_predictor/Features/LogIn/Data/Repositories_Implementation/log_in_repository_implementation.dart';
 import 'package:structural_health_predictor/Features/LogIn/Domain/Repositories_abstract/log_in_repository_abstract.dart';
 import 'package:structural_health_predictor/Features/LogIn/Domain/UseCase/log_in_usecase.dart';
@@ -45,22 +45,29 @@ void init() {
 
   // ==================== INSPECTION LOGS DEPENDENCIES ====================
   // Register data source
-  sl.registerLazySingleton<AssesmentRemoteDataSource>(
-    () => AssesmentRemoteDataSourceImpl(firestore: sl()),
+  sl.registerLazySingleton<DashboardRemoteDataSource>(
+    () => DashboardRemoteDataSourceImpl(firestore: sl()),
   );
 
   // Register repository
-  sl.registerLazySingleton<InspectionLogRepository>(
-    () => InspectionRepositoryImpl(remoteDataSource: sl()),
+  sl.registerLazySingleton<DashboardRepository>(
+    () => DashboardRepositoryImpl(remoteDataSource: sl()),
   );
 
   // Register use case
-  sl.registerLazySingleton<InspectionLogsUseCase>(
-    () => InspectionLogsUseCase(repository: sl()),
+  sl.registerLazySingleton<FetchDashboardLogsUseCase>(
+    () => FetchDashboardLogsUseCase(repository: sl()),
+  );
+
+  sl.registerLazySingleton<DeleteDashboardLogUseCase>(
+    () => DeleteDashboardLogUseCase(repository: sl()),
   );
 
   // Register bloc as singleton (persistent stream subscription)
-  sl.registerSingleton<InspectionBloc>(
-    InspectionBloc(watchInspectionLogsUseCase: sl()),
+  sl.registerSingleton<DashboardBloc>(
+    DashboardBloc(
+      fetchDashboardLogsUseCase: sl(),
+      deleteDashboardLogUseCase: sl(),
+    ),
   );
 }
