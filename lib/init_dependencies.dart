@@ -7,6 +7,10 @@ import 'package:structural_health_predictor/Features/Dashboard/Data/RepositoryIm
 import 'package:structural_health_predictor/Features/Dashboard/Domain/RepositoriesAbstract/dashboard_repository.dart';
 import 'package:structural_health_predictor/Features/Dashboard/Domain/UseCase/dashboard_usecase.dart';
 import 'package:structural_health_predictor/Features/Dashboard/Presentation/Bloc/dashboard_bloc.dart';
+import 'package:structural_health_predictor/Features/ForgotPassword/Data/Repositories_Implementation/forgot_password_repository_implementation.dart';
+import 'package:structural_health_predictor/Features/ForgotPassword/Domain/Repositories_abstract/forgot_password_repository_abstract.dart';
+import 'package:structural_health_predictor/Features/ForgotPassword/Domain/UseCase/forgot_password_usecase.dart';
+import 'package:structural_health_predictor/Features/ForgotPassword/Presentation/Bloc/forgot_password_bloc.dart';
 import 'package:structural_health_predictor/Features/LogIn/Data/Repositories_Implementation/log_in_repository_implementation.dart';
 import 'package:structural_health_predictor/Features/LogIn/Domain/Repositories_abstract/log_in_repository_abstract.dart';
 import 'package:structural_health_predictor/Features/LogIn/Domain/UseCase/log_in_usecase.dart';
@@ -42,6 +46,39 @@ void init() {
   sl.registerLazySingleton<LogInUsecase>(() => LogInUsecase(repository: sl()));
 
   sl.registerFactory<LoginBloc>(() => LoginBloc(loginUsecase: sl()));
+
+  // ==================== FORGOT PASSWORD DEPENDENCIES ====================
+  sl.registerLazySingleton<ForgotPasswordRepositoryAbstract>(
+    () => ForgotPasswordRepositoryImpl(
+      firebaseAuth: sl(),
+      firestore: sl(),
+    ),
+  );
+
+  sl.registerLazySingleton<CheckEmailUsecase>(
+    () => CheckEmailUsecase(repository: sl()),
+  );
+
+  sl.registerLazySingleton<SendVerificationCodeUsecase>(
+    () => SendVerificationCodeUsecase(repository: sl()),
+  );
+
+  sl.registerLazySingleton<VerifyCodeUsecase>(
+    () => VerifyCodeUsecase(repository: sl()),
+  );
+
+  sl.registerLazySingleton<UpdatePasswordUsecase>(
+    () => UpdatePasswordUsecase(repository: sl()),
+  );
+
+  sl.registerFactory<ForgotPasswordBloc>(
+    () => ForgotPasswordBloc(
+      checkEmailUsecase: sl(),
+      sendVerificationCodeUsecase: sl(),
+      verifyCodeUsecase: sl(),
+      updatePasswordUsecase: sl(),
+    ),
+  );
 
   // ==================== INSPECTION LOGS DEPENDENCIES ====================
   // Register data source

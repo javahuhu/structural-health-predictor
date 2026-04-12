@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:structural_health_predictor/Features/ForgotPassword/Presentation/Pages/forgot_password_page.dart';
 import 'package:structural_health_predictor/Features/LogIn/Presentation/Pages/log_in_page.dart';
 import 'package:structural_health_predictor/Features/MainNavBar/main_nav_bar.dart';
 import 'package:structural_health_predictor/Features/signup/Presentation/Pages/signup_page.dart';
@@ -22,6 +23,11 @@ class AppRouter {
        GoRoute(
         path: '/login',
         builder: (context, state) => const LoginPageWrapper(),
+      ),
+
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordPageWrapper(),
       ),
 
       GoRoute(

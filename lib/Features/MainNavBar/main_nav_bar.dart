@@ -7,7 +7,7 @@ import 'package:structural_health_predictor/Features/Dashboard/Presentation/Bloc
 import 'package:structural_health_predictor/Features/Dashboard/Presentation/Bloc/dashboard_event.dart';
 import 'package:structural_health_predictor/Features/Dashboard/Presentation/Bloc/dashboard_state.dart';
 import 'package:structural_health_predictor/Features/Dashboard/Presentation/Page/dashboard.dart';
-import 'package:structural_health_predictor/Features/Profile/Presentation/Page/profile_page.dart';
+import 'package:structural_health_predictor/Features/analysis/Presentation/Page/analysis_list_page.dart';
 import 'package:structural_health_predictor/Features/Settings/Presentation/Page/settings_page.dart';
 
 class MainNavigator extends StatefulWidget {

@@ -320,8 +320,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
             alignment: Alignment.centerRight,
             child: GestureDetector(
               onTap: () {
-                // Navigate to forgot password page
-                // Navigator.pushNamed(context, '/forgot-password');
+                context.push('/forgot-password');
               },
               child: Text(
                 'Forgot Password?',
